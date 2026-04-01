@@ -1,18 +1,28 @@
-from django.db import migrations, models
+from django.db import migrations
+
+
+def create_superuser(apps, schema_editor):
+    User = apps.get_model('rentals', 'User')
+
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser(
+            username='admin',
+            email='lmanful0@gmail.com',
+            password='Admin12345'
+        )
+
+
+def remove_superuser(apps, schema_editor):
+    User = apps.get_model('rentals', 'User')
+    User.objects.filter(username='admin').delete()
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
-        ("rentals", "0001_initial"),
+        ('rentals', '0001_initial'),
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="user",
-            name="is_booking_approver",
-            field=models.BooleanField(
-                default=False,
-                help_text="Allow this staff user to confirm bookings without full admin access.",
-            ),
-        ),
+        migrations.RunPython(create_superuser, remove_superuser),
     ]
