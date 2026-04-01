@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-&t--a#6*w^#u*=_%ea!^3v@@pi7&2hfc0_8+0i-0j6%_$rbbfn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['winbird-ent.onrender.com', '.onrender.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 
 
 # Application definition
