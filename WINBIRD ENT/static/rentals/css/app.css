@@ -1388,3 +1388,279 @@ code {
         scroll-behavior: auto !important;
     }
 }
+
+/* ===== MOBILE LAYOUT FIX ===== */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+        overflow-x: hidden;
+    }
+
+    .main-panel {
+        padding: 10px !important;
+    }
+
+    .page-content {
+        gap: 14px;
+    }
+
+    .topbar {
+        padding: 14px !important;
+        border-radius: 18px;
+        margin-bottom: 14px;
+    }
+
+    .topbar-copy h2 {
+        font-size: 1.45rem !important;
+        line-height: 1.15;
+    }
+
+    .topbar-copyline {
+        font-size: 0.95rem;
+        line-height: 1.45;
+    }
+
+    .hero-banner {
+        padding: 16px !important;
+        border-radius: 20px;
+        gap: 14px;
+    }
+
+    .hero-banner h3 {
+        font-size: 1.25rem !important;
+        line-height: 1.25;
+    }
+
+    .hero-copy {
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    .stats-grid,
+    .two-column,
+    .three-column,
+    .content-grid,
+    .field-grid,
+    .detail-grid,
+    .three-up,
+    .four-up,
+    .availability-results {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+
+    .stat-card,
+    .panel-card,
+    .auth-card,
+    .role-card,
+    .stack-item,
+    .formset-row,
+    .detail-grid div,
+    .note-box,
+    .availability-card,
+    .schedule-day,
+    .timeline-item {
+        padding: 14px !important;
+        border-radius: 18px !important;
+    }
+
+    .stat-card {
+        min-height: auto;
+    }
+
+    .stat-card p {
+        font-size: 0.7rem;
+        margin-bottom: 8px;
+    }
+
+    .stat-card strong {
+        font-size: 1.7rem !important;
+    }
+
+    .panel-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .panel-head h3 {
+        font-size: 1.2rem;
+    }
+
+    .user-chip {
+        width: 100%;
+        min-width: 0;
+        padding: 12px 14px;
+        border-radius: 16px;
+    }
+
+    .topbar-actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .primary-btn,
+    .secondary-btn,
+    .danger-btn,
+    .subtle-btn,
+    .text-btn,
+    button {
+        width: 100%;
+        padding: 11px 14px;
+        font-size: 0.96rem;
+        border-radius: 12px;
+    }
+
+    .chip-row,
+    .tag-group,
+    .action-row,
+    .page-actions,
+    .pagination-row,
+    .notification-actions,
+    .staff-account-meta,
+    .role-card-head,
+    .staff-account-head,
+    .notification-row,
+    .availability-card-head,
+    .schedule-day-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 16px;
+    }
+
+    table {
+        min-width: 560px !important;
+        font-size: 0.92rem;
+    }
+
+    th,
+    td {
+        padding: 10px 8px;
+        white-space: nowrap;
+    }
+
+    .schedule-calendar {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .schedule-weekdays,
+    .schedule-grid {
+        min-width: 760px !important;
+        gap: 8px;
+    }
+
+    .schedule-day {
+        min-height: 140px;
+    }
+
+    .auth-shell {
+        padding: 12px;
+    }
+
+    .auth-layout {
+        grid-template-columns: 1fr !important;
+        gap: 14px;
+    }
+
+    .auth-showcase,
+    .auth-card {
+        padding: 16px !important;
+        border-radius: 20px !important;
+    }
+
+    .auth-showcase h2 {
+        font-size: 1.5rem !important;
+        line-height: 1.2;
+    }
+
+    .brand-title {
+        font-size: 1.05rem !important;
+    }
+
+    .sidebar {
+        width: 280px !important;
+        max-width: 82% !important;
+        padding: 14px 12px !important;
+    }
+
+    .sidebar-nav a {
+        min-height: 40px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+    }
+
+    .brand-block,
+    .sidebar-card {
+        padding: 12px;
+        border-radius: 18px;
+    }
+
+    .mobile-menu-toggle {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        font-size: 1.15rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-panel {
+        padding: 8px !important;
+    }
+
+    .page-content {
+        gap: 12px;
+    }
+
+    .topbar {
+        padding: 12px !important;
+    }
+
+    .topbar-copy h2 {
+        font-size: 1.25rem !important;
+    }
+
+    .topbar-copyline {
+        font-size: 0.9rem;
+    }
+
+    .hero-banner,
+    .panel-card,
+    .stat-card,
+    .role-card,
+    .stack-item,
+    .formset-row,
+    .detail-grid div,
+    .note-box {
+        padding: 12px !important;
+        border-radius: 16px !important;
+    }
+
+    .hero-banner h3 {
+        font-size: 1.12rem !important;
+    }
+
+    .stat-card strong {
+        font-size: 1.5rem !important;
+    }
+
+    table {
+        min-width: 520px !important;
+    }
+
+    th,
+    td {
+        padding: 9px 7px;
+        font-size: 0.88rem;
+    }
+}
