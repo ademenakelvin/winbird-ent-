@@ -21,29 +21,55 @@
                     </div>
                     <p class="brand-copy">Internal rental operations workspace.</p>
                 </div>
+
                 <div class="sidebar-section">
                     <p class="sidebar-label">Workspace</p>
                     <nav class="sidebar-nav">
-                        <a class="{% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'admin-dashboard' or request.resolver_match.url_name == 'staff-dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">Dashboard</a>
-                        <a class="{% if request.resolver_match.url_name == 'booking-list' or request.resolver_match.url_name == 'booking-add' or request.resolver_match.url_name == 'booking-detail' %}active{% endif %}" href="{% url 'booking-list' %}">Bookings</a>
-                        <a class="{% if request.resolver_match.url_name == 'item-list' or request.resolver_match.url_name == 'item-add' or request.resolver_match.url_name == 'item-edit' %}active{% endif %}" href="{% url 'item-list' %}">Rental Items</a>
-                        <a class="{% if request.resolver_match.url_name == 'inventory' %}active{% endif %}" href="{% url 'inventory' %}">Inventory</a>
+                        <a class="{% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'admin-dashboard' or request.resolver_match.url_name == 'staff-dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                            <span class="sidebar-link-label">Dashboard</span>
+                        </a>
+
+                        <a class="{% if request.resolver_match.url_name == 'booking-list' or request.resolver_match.url_name == 'booking-add' or request.resolver_match.url_name == 'booking-detail' %}active{% endif %}" href="{% url 'booking-list' %}">
+                            <span class="sidebar-link-label">Bookings</span>
+                        </a>
+
+                        <a class="{% if request.resolver_match.url_name == 'item-list' or request.resolver_match.url_name == 'item-add' or request.resolver_match.url_name == 'item-edit' %}active{% endif %}" href="{% url 'item-list' %}">
+                            <span class="sidebar-link-label">Rental Items</span>
+                        </a>
+
+                        <a class="{% if request.resolver_match.url_name == 'inventory' %}active{% endif %}" href="{% url 'inventory' %}">
+                            <span class="sidebar-link-label">Inventory</span>
+                        </a>
+
                         <a class="{% if request.resolver_match.url_name == 'inventory-alerts' %}active{% endif %}" href="{% url 'inventory-alerts' %}">
                             <span class="sidebar-link-label">Inventory Alerts</span>
                             {% if unread_inventory_alert_count %}
                                 <span class="nav-badge">{{ unread_inventory_alert_count }}</span>
                             {% endif %}
                         </a>
-                        <a class="{% if request.resolver_match.url_name == 'return-tracker' %}active{% endif %}" href="{% url 'return-tracker' %}">Returns</a>
+
+                        <a class="{% if request.resolver_match.url_name == 'return-tracker' %}active{% endif %}" href="{% url 'return-tracker' %}">
+                            <span class="sidebar-link-label">Returns</span>
+                        </a>
+
                         <a class="{% if request.resolver_match.url_name == 'notifications' %}active{% endif %}" href="{% url 'notifications' %}">
                             <span class="sidebar-link-label">Notifications</span>
                             {% if unread_notification_count %}
                                 <span class="nav-badge">{{ unread_notification_count }}</span>
                             {% endif %}
                         </a>
-                        <a class="{% if request.resolver_match.url_name == 'payment-list' or request.resolver_match.url_name == 'payment-add' %}active{% endif %}" href="{% url 'payment-list' %}">Payments</a>
-                        <a class="{% if request.resolver_match.url_name == 'reports' %}active{% endif %}" href="{% url 'reports' %}">Reports</a>
-                        <a class="{% if request.resolver_match.url_name == 'settings' %}active{% endif %}" href="{% url 'settings' %}">Settings</a>
+
+                        <a class="{% if request.resolver_match.url_name == 'payment-list' or request.resolver_match.url_name == 'payment-add' %}active{% endif %}" href="{% url 'payment-list' %}">
+                            <span class="sidebar-link-label">Payments</span>
+                        </a>
+
+                        <a class="{% if request.resolver_match.url_name == 'reports' %}active{% endif %}" href="{% url 'reports' %}">
+                            <span class="sidebar-link-label">Reports</span>
+                        </a>
+
+                        <a class="{% if request.resolver_match.url_name == 'settings' %}active{% endif %}" href="{% url 'settings' %}">
+                            <span class="sidebar-link-label">Settings</span>
+                        </a>
                     </nav>
                 </div>
             </aside>
@@ -58,12 +84,20 @@
                         <h2>{% block page_heading %}WINBIRD Dashboard{% endblock %}</h2>
                         <p class="topbar-copyline">{% block page_intro %}Manage bookings, inventory, payments, and fulfilment from one shared workspace.{% endblock %}</p>
                     </div>
+
                     <div class="topbar-actions">
-                        <div class="user-chip {% if request.user.can_manage_catalog %}admin{% else %}staff{% endif %}">
-                            <p class="user-chip-kicker">{% if request.user.can_manage_catalog %}Admin workspace{% else %}Staff workspace{% endif %}</p>
+                        <div class="user-chip {% if request.user.is_authenticated and request.user.can_manage_catalog %}admin{% else %}staff{% endif %}">
+                            <p class="user-chip-kicker">
+                                {% if request.user.is_authenticated and request.user.can_manage_catalog %}
+                                    Admin workspace
+                                {% else %}
+                                    Staff workspace
+                                {% endif %}
+                            </p>
                             <span>{{ request.user.get_full_name|default:request.user.username }}</span>
                             <small>{{ request.user.role|title }}</small>
                         </div>
+
                         <form method="post" action="{% url 'logout' %}">
                             {% csrf_token %}
                             <button type="submit" class="secondary-btn subtle-btn">Sign out</button>
