@@ -11,7 +11,7 @@
 <body class="{% if request.user.is_authenticated %}app-body{% else %}auth-body{% endif %}">
     {% if request.user.is_authenticated %}
         <div class="app-shell">
-            <aside class="sidebar">
+            <aside class="sidebar" id="mobileSidebar">
                 <div class="brand-block">
                     <div class="brand-row">
                         <div class="brand-mark">WB</div>
@@ -48,9 +48,12 @@
                 </div>
             </aside>
 
+            <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
             <div class="main-panel">
                 <header class="topbar">
                     <div class="topbar-copy">
+                        <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="Open menu">☰</button>
                         <p class="eyebrow">Internal staff system</p>
                         <h2>{% block page_heading %}WINBIRD Dashboard{% endblock %}</h2>
                         <p class="topbar-copyline">{% block page_intro %}Manage bookings, inventory, payments, and fulfilment from one shared workspace.{% endblock %}</p>
@@ -99,6 +102,29 @@
     {% endif %}
 
     <script src="{% static 'rentals/js/app.js' %}"></script>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const toggleBtn = document.getElementById("mobileMenuToggle");
+        const sidebar = document.getElementById("mobileSidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+
+        if (toggleBtn && sidebar && overlay) {
+            toggleBtn.addEventListener("click", function () {
+                sidebar.classList.toggle("open");
+                overlay.classList.toggle("show");
+                document.body.classList.toggle("menu-open");
+            });
+
+            overlay.addEventListener("click", function () {
+                sidebar.classList.remove("open");
+                overlay.classList.remove("show");
+                document.body.classList.remove("menu-open");
+            });
+        }
+    });
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>
