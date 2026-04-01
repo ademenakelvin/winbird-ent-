@@ -1664,3 +1664,49 @@ code {
         font-size: 0.88rem;
     }
 }
+
+/* Mobile Fix */
+@media (max-width: 768px) {
+
+    .auth-shell {
+        padding: 15px;
+    }
+
+    .hero-banner {
+        padding: 15px;
+        border-radius: 16px;
+    }
+
+    .hero-banner h3 {
+        font-size: 16px;
+    }
+
+    .hero-banner p {
+        font-size: 13px;
+    }
+
+    .login-card {
+        padding: 20px;
+        border-radius: 18px;
+    }
+
+    .login-card h2 {
+        font-size: 20px;
+    }
+
+    .login-card input {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .primary-btn {
+        padding: 12px;
+        font-size: 15px;
+    }
+
+    .message {
+        font-size: 13px;
+        padding: 10px;
+    }
+
+}
