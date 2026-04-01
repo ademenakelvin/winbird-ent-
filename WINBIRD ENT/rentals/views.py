@@ -14,10 +14,10 @@ from django.db.models import Count, F, Q, Sum
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.dateparse import parse_date
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.utils import timezone
 from django.views import View
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, ListView, RedirectView, TemplateView
@@ -65,9 +65,11 @@ def notification_redirect(request, notification):
 
 class AdminRequiredMixin(UserPassesTestMixin):
     def test_func(self):
-        return self.request.user.is_authenticated and self.request.user.can_manage_catalog
+        return self.request.user.is_authenticated and getattr(self.request.user, "can_manage_catalog", False)
 
     def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return redirect("login")
         raise PermissionDenied("Only admins can manage catalog and admin-only actions.")
 
 
@@ -90,7 +92,7 @@ class RoleDashboardRedirectView(LoginRequiredMixin, RedirectView):
     permanent = False
 
     def get_redirect_url(self, *args, **kwargs):
-        if self.request.user.can_manage_catalog:
+        if getattr(self.request.user, "can_manage_catalog", False):
             return reverse("admin-dashboard")
         return reverse("staff-dashboard")
 
@@ -143,7 +145,9 @@ class AdminDashboardView(DashboardBaseView):
     template_name = "rentals/admin_dashboard.html"
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.can_manage_catalog:
+        if not request.user.is_authenticated:
+            return redirect("login")
+        if not getattr(request.user, "can_manage_catalog", False):
             return redirect("staff-dashboard")
         return super().dispatch(request, *args, **kwargs)
 
@@ -168,7 +172,9 @@ class StaffDashboardView(DashboardBaseView):
     template_name = "rentals/staff_dashboard.html"
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.can_manage_catalog:
+        if not request.user.is_authenticated:
+            return redirect("login")
+        if getattr(request.user, "can_manage_catalog", False):
             return redirect("admin-dashboard")
         return super().dispatch(request, *args, **kwargs)
 
@@ -1181,7 +1187,7 @@ class StaffAccountUpdateView(LoginRequiredMixin, AdminRequiredMixin, View):
 @login_required
 @require_POST
 def staff_account_action(request, pk, action):
-    if not request.user.can_manage_catalog:
+    if not getattr(request.user, "can_manage_catalog", False):
         raise PermissionDenied("Only admins can manage staff accounts.")
 
     staff_user = get_object_or_404(User, pk=pk, role=User.Role.STAFF)
@@ -1220,7 +1226,7 @@ class SettingsView(LoginRequiredMixin, TemplateView):
             "booking_approver_count": staff_users.filter(is_booking_approver=True, is_active=True).count(),
             "admin_count": User.objects.filter(role=User.Role.ADMIN).count(),
             "staff_users": staff_users[:12],
-            "staff_form": staff_form if self.request.user.can_manage_catalog else None,
+            "staff_form": staff_form if getattr(self.request.user, "can_manage_catalog", False) else None,
         }
 
     def get_context_data(self, **kwargs):
@@ -1229,7 +1235,7 @@ class SettingsView(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        if not request.user.can_manage_catalog:
+        if not getattr(request.user, "can_manage_catalog", False):
             raise PermissionDenied("Only admins can create staff accounts.")
 
         staff_form = StaffAccountForm(request.POST)
