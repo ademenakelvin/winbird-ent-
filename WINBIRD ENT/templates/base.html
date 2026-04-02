@@ -5,27 +5,26 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}WINBIRD Enterprise{% endblock %}</title>
-
     <link rel="stylesheet" href="{% static 'rentals/css/app.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
-
 <body class="{% if request.user.is_authenticated %}app-body{% else %}auth-body{% endif %}">
 
 {% if request.user.is_authenticated %}
 <div class="app-shell">
 
-    <!-- SIDEBAR -->
     <aside class="sidebar" id="mobileSidebar">
-        <div class="brand-block">
+        <div class="brand-block premium-brand">
             <div class="brand-row">
                 <div class="brand-mark">WB</div>
-                <h1 class="brand-title">WINBIRD</h1>
+                <div>
+                    <p class="brand-kicker">Internal system</p>
+                    <h1 class="brand-title">WINBIRD</h1>
+                </div>
             </div>
         </div>
 
         <nav class="sidebar-nav">
-
             <a href="{% url 'dashboard' %}">Dashboard</a>
             <a href="{% url 'booking-list' %}">Bookings</a>
             <a href="{% url 'item-list' %}">Items</a>
@@ -34,37 +33,42 @@
             <a href="{% url 'payment-list' %}">Payments</a>
             <a href="{% url 'reports' %}">Reports</a>
             <a href="{% url 'settings' %}">Settings</a>
-
         </nav>
+
+        <div class="sidebar-card sidebar-footer-card">
+            <p class="brand-kicker">Workspace</p>
+            <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+            <p>{{ request.user.role|title }}</p>
+        </div>
     </aside>
 
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- MAIN -->
     <div class="main-panel">
-
-        <!-- SIMPLE TOPBAR -->
-        <header class="topbar simple-topbar">
-
+        <header class="topbar premium-topbar">
             <div class="topbar-left">
-                <button id="mobileMenuToggle" class="mobile-menu-toggle">☰</button>
+                <button id="mobileMenuToggle" class="mobile-menu-toggle" type="button" aria-label="Open menu">☰</button>
 
-                <div>
+                <div class="topbar-copy">
+                    <p class="eyebrow">Premium workspace</p>
                     <h2>{% block page_heading %}Dashboard{% endblock %}</h2>
-                    <p class="topbar-copyline">
-                        {% block page_intro %}Manage your system easily{% endblock %}
-                    </p>
+                    <p class="topbar-copyline">{% block page_intro %}Manage your system easily{% endblock %}</p>
                 </div>
             </div>
 
-            <form method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button type="submit" class="secondary-btn">Logout</button>
-            </form>
+            <div class="topbar-right">
+                <div class="topbar-user">
+                    <span class="topbar-user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+                    <small>{{ request.user.role|title }}</small>
+                </div>
 
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="secondary-btn">Logout</button>
+                </form>
+            </div>
         </header>
 
-        <!-- MESSAGES -->
         {% if messages %}
         <div class="message-stack">
             {% for message in messages %}
@@ -73,17 +77,13 @@
         </div>
         {% endif %}
 
-        <!-- CONTENT -->
         <main class="page-content">
             {% block content %}{% endblock %}
         </main>
-
     </div>
 </div>
 
 {% else %}
-
-<!-- LOGIN / AUTH -->
 <main class="auth-shell">
     {% if messages %}
         <div class="message-stack">
@@ -95,35 +95,30 @@
 
     {% block content %}{% endblock %}
 </main>
-
 {% endif %}
 
-<!-- MOBILE SCRIPT -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-
     const toggle = document.getElementById("mobileMenuToggle");
     const sidebar = document.getElementById("mobileSidebar");
     const overlay = document.getElementById("sidebarOverlay");
 
-    if (toggle) {
-        toggle.onclick = () => {
+    if (toggle && sidebar && overlay) {
+        toggle.addEventListener("click", function () {
             sidebar.classList.toggle("open");
             overlay.classList.toggle("show");
-        };
-    }
+            document.body.classList.toggle("menu-open");
+        });
 
-    if (overlay) {
-        overlay.onclick = () => {
+        overlay.addEventListener("click", function () {
             sidebar.classList.remove("open");
             overlay.classList.remove("show");
-        };
+            document.body.classList.remove("menu-open");
+        });
     }
-
 });
 </script>
 
 {% block extra_js %}{% endblock %}
-
 </body>
 </html>
