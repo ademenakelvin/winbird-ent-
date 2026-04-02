@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.password_validation import validate_password
-from django.forms import BaseFormSet, formset_factory, inlineformset_factory
+from django.forms import BaseFormSet, BaseInlineFormSet, formset_factory, inlineformset_factory
 
 from .models import Booking, Inventory, Payment, PriceOption, RentalItem
 
@@ -50,13 +50,87 @@ class PriceOptionForm(StyledFieldsMixin, forms.ModelForm):
     class Meta:
         model = PriceOption
         fields = ["label", "amount", "is_default", "is_active"]
-        widgets = {"amount": forms.NumberInput(attrs={"step": "0.01", "min": 0})}
+        widgets = {
+            "amount": forms.NumberInput(attrs={"step": "0.01", "min": 0})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["is_default"].required = False
+        self.fields["is_active"].required = False
+
+        # For new empty extra rows, do not pre-check the boxes
+        if not self.instance.pk:
+            self.fields["is_default"].initial = False
+            self.fields["is_active"].initial = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        label = cleaned_data.get("label")
+        amount = cleaned_data.get("amount")
+        delete = cleaned_data.get("DELETE")
+
+        # Ignore rows marked for deletion
+        if delete:
+            return cleaned_data
+
+        # Completely blank extra row should be ignored
+        if not label and amount in (None, ""):
+            self.empty_permitted = True
+            return cleaned_data
+
+        # If one is filled, both are required
+        if label and amount in (None, ""):
+            self.add_error("amount", "Enter an amount.")
+        if amount not in (None, "") and not label:
+            self.add_error("label", "Enter a label.")
+
+        return cleaned_data
+
+
+class BasePriceOptionFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+
+        valid_rows = 0
+        default_count = 0
+
+        for form in self.forms:
+            if not hasattr(form, "cleaned_data"):
+                continue
+
+            if form.cleaned_data.get("DELETE"):
+                continue
+
+            label = form.cleaned_data.get("label")
+            amount = form.cleaned_data.get("amount")
+
+            # skip totally blank rows
+            if not label and amount in (None, ""):
+                continue
+
+            valid_rows += 1
+
+            if form.cleaned_data.get("is_default"):
+                default_count += 1
+
+        if valid_rows == 0:
+            raise forms.ValidationError("Add at least one price option.")
+
+        if default_count == 0:
+            raise forms.ValidationError("Select one default price option.")
+
+        if default_count > 1:
+            raise forms.ValidationError("Only one price option can be the default.")
 
 
 PriceOptionFormSet = inlineformset_factory(
     RentalItem,
     PriceOption,
     form=PriceOptionForm,
+    formset=BasePriceOptionFormSet,
     extra=1,
     can_delete=True,
     min_num=1,
