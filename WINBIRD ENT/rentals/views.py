@@ -1285,3 +1285,37 @@ class SettingsView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context.update(self.build_context(staff_form=staff_form))
         return self.render_to_response(context)
+        
+        from django.http import JsonResponse
+        from django.contrib.auth.decorators import login_required
+        from django.utils.timesince import timesince
+
+@login_required
+def topbar_notifications_api(request):
+    notifications = Notification.objects.select_related("booking").order_by("-created_at")[:6]
+
+    items = []
+    for note in notifications:
+        if note.booking_id:
+            url = reverse("booking-detail", args=[note.booking_id])
+        else:
+            url = reverse("notifications")
+
+        items.append(
+            {
+                "title": note.title,
+                "message": note.message,
+                "is_read": note.is_read,
+                "created": f"{timesince(note.created_at)} ago",
+                "url": url,
+            }
+        )
+
+    unread_count = Notification.objects.filter(is_read=False).count()
+
+    return JsonResponse(
+        {
+            "unread_count": unread_count,
+            "items": items,
+        }
+    )
