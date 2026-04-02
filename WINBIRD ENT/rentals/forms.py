@@ -127,7 +127,10 @@ class BookingCreateForm(StyledFieldsMixin, forms.ModelForm):
         widgets = {
             "event_date": forms.DateInput(attrs={"type": "date"}),
             "return_due_date": forms.DateInput(attrs={"type": "date"}),
-            "notes": forms.Textarea(attrs={"placeholder": "Optional notes"}),
+          "notes": forms.Textarea(attrs={
+            "placeholder": "Optional notes",
+            "rows": 2
+    })
         }
 
 
