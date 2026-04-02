@@ -42,8 +42,7 @@ class LoginForm(StyledFieldsMixin, AuthenticationForm):
 class RentalItemForm(StyledFieldsMixin, forms.ModelForm):
     class Meta:
         model = RentalItem
-        fields = ["category", "name", "is_active"]
-
+        fields = ["name", "is_active"]
 
 # =============================
 # INVENTORY
