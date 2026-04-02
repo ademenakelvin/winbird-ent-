@@ -532,6 +532,7 @@ class BookingCreateView(LoginRequiredMixin, View):
         form = BookingCreateForm(request.POST)
         event_date = None
         return_due_date = None
+
         if form.is_valid():
             event_date = form.cleaned_data["event_date"]
             return_due_date = form.cleaned_data["return_due_date"]
@@ -547,17 +548,27 @@ class BookingCreateView(LoginRequiredMixin, View):
             with transaction.atomic():
                 customer, created = Customer.objects.get_or_create(
                     phone=form.cleaned_data["customer_phone"],
-                    defaults={"name": form.cleaned_data["customer_name"]},
+                    defaults={
+                        "name": form.cleaned_data["customer_name"],
+                        "location": form.cleaned_data["customer_location"],
+                        "emergency_contact_name": form.cleaned_data["emergency_contact_name"],
+                        "emergency_contact_phone": form.cleaned_data["emergency_contact_phone"],
+                    },
                 )
-                if not created and customer.name != form.cleaned_data["customer_name"]:
+
+                if not created:
                     customer.name = form.cleaned_data["customer_name"]
-                    customer.save(update_fields=["name", "updated_at"])
+                    customer.location = form.cleaned_data["customer_location"]
+                    customer.emergency_contact_name = form.cleaned_data["emergency_contact_name"]
+                    customer.emergency_contact_phone = form.cleaned_data["emergency_contact_phone"]
+                    customer.save()
 
                 booking = Booking.objects.create(
                     customer=customer,
                     created_by=request.user,
                     event_date=form.cleaned_data["event_date"],
                     return_due_date=form.cleaned_data["return_due_date"],
+                    event_location=form.cleaned_data["event_location"],
                     notes=form.cleaned_data["notes"],
                     status=Booking.Status.PENDING,
                 )
@@ -565,6 +576,7 @@ class BookingCreateView(LoginRequiredMixin, View):
                 for cleaned_data in item_formset.cleaned_data:
                     if not cleaned_data or cleaned_data.get("DELETE"):
                         continue
+
                     BookingItem.objects.create(
                         booking=booking,
                         rental_item=cleaned_data["rental_item"],
