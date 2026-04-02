@@ -33,6 +33,23 @@
             <a href="{% url 'item-list' %}">Items</a>
             <a href="{% url 'inventory' %}">Inventory</a>
             <a href="{% url 'return-tracker' %}">Returns</a>
+
+            <!-- Notifications -->
+            <a href="{% url 'notifications' %}">
+                Notifications
+                {% if unread_notification_count %}
+                    <span class="nav-badge">{{ unread_notification_count }}</span>
+                {% endif %}
+            </a>
+
+            <!-- Inventory Alerts -->
+            <a href="{% url 'inventory-alerts' %}">
+                Alerts
+                {% if unread_inventory_alert_count %}
+                    <span class="nav-badge">{{ unread_inventory_alert_count }}</span>
+                {% endif %}
+            </a>
+
             <a href="{% url 'payment-list' %}">Payments</a>
             <a href="{% url 'reports' %}">Reports</a>
             <a href="{% url 'settings' %}">Settings</a>
@@ -95,6 +112,7 @@
 
 {% else %}
 
+<!-- AUTH -->
 <div class="auth-shell">
     {% if messages %}
     <div class="message-stack">
@@ -109,7 +127,7 @@
 
 {% endif %}
 
-<!-- ONLY JS -->
+<!-- JS -->
 <script src="{% static 'rentals/js/app.js' %}"></script>
 {% block extra_js %}{% endblock %}
 
