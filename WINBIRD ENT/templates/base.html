@@ -5,14 +5,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}WINBIRD Enterprise{% endblock %}</title>
+
     <link rel="stylesheet" href="{% static 'rentals/css/app.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
+
 <body class="{% if request.user.is_authenticated %}app-body{% else %}auth-body{% endif %}">
 
 {% if request.user.is_authenticated %}
 <div class="app-shell">
 
+    <!-- SIDEBAR -->
     <aside class="sidebar" id="mobileSidebar">
         <div class="brand-block premium-brand">
             <div class="brand-row">
@@ -42,12 +45,16 @@
         </div>
     </aside>
 
+    <!-- OVERLAY -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+    <!-- MAIN -->
     <div class="main-panel">
+
+        <!-- TOPBAR -->
         <header class="topbar premium-topbar">
             <div class="topbar-left">
-                <button id="mobileMenuToggle" class="mobile-menu-toggle" type="button" aria-label="Open menu">☰</button>
+                <button id="mobileMenuToggle" class="mobile-menu-toggle" type="button">☰</button>
 
                 <div class="topbar-copy">
                     <p class="eyebrow">Premium workspace</p>
@@ -58,7 +65,7 @@
 
             <div class="topbar-right">
                 <div class="topbar-user">
-                    <span class="topbar-user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+                    <span>{{ request.user.get_full_name|default:request.user.username }}</span>
                     <small>{{ request.user.role|title }}</small>
                 </div>
 
@@ -69,6 +76,7 @@
             </div>
         </header>
 
+        <!-- MESSAGES -->
         {% if messages %}
         <div class="message-stack">
             {% for message in messages %}
@@ -77,13 +85,17 @@
         </div>
         {% endif %}
 
+        <!-- CONTENT -->
         <main class="page-content">
             {% block content %}{% endblock %}
         </main>
+
     </div>
 </div>
 
 {% else %}
+
+<!-- AUTH PAGES -->
 <div class="auth-shell">
     {% if messages %}
     <div class="message-stack">
@@ -95,8 +107,10 @@
 
     {% block auth_content %}{% endblock %}
 </div>
+
 {% endif %}
 
+<!-- MOBILE MENU SCRIPT -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const toggle = document.getElementById("mobileMenuToggle");
@@ -119,6 +133,10 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
+<!-- MAIN APP JS (VERY IMPORTANT) -->
+<script src="{% static 'rentals/js/app.js' %}"></script>
+
 {% block extra_js %}{% endblock %}
+
 </body>
 </html>
