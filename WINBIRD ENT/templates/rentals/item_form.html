@@ -25,14 +25,7 @@
                 </div>
             </div>
 
-            <div class="field-grid">
-                <div class="field-group">
-                    <label for="{{ form.category.id_for_label }}">Category</label>
-                    {{ form.category }}
-                    {% if form.category.errors %}
-                        <div class="field-error">{{ form.category.errors|join:", " }}</div>
-                    {% endif %}
-                </div>
+            
 
                 <div class="field-group">
                     <label for="{{ form.name.id_for_label }}">Item name</label>
