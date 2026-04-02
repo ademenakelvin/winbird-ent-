@@ -9,13 +9,11 @@
     <link rel="stylesheet" href="{% static 'rentals/css/app.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
-
 <body class="{% if request.user.is_authenticated %}app-body{% else %}auth-body{% endif %}">
 
 {% if request.user.is_authenticated %}
 <div class="app-shell">
 
-    <!-- SIDEBAR -->
     <aside class="sidebar" id="mobileSidebar">
         <div class="brand-block premium-brand">
             <div class="brand-row">
@@ -34,7 +32,6 @@
             <a href="{% url 'inventory' %}">Inventory</a>
             <a href="{% url 'return-tracker' %}">Returns</a>
 
-            <!-- Notifications -->
             <a href="{% url 'notifications' %}">
                 Notifications
                 {% if unread_notification_count %}
@@ -42,7 +39,6 @@
                 {% endif %}
             </a>
 
-            <!-- Inventory Alerts -->
             <a href="{% url 'inventory-alerts' %}">
                 Alerts
                 {% if unread_inventory_alert_count %}
@@ -62,13 +58,9 @@
         </div>
     </aside>
 
-    <!-- OVERLAY -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- MAIN -->
     <div class="main-panel">
-
-        <!-- TOPBAR -->
         <header class="topbar premium-topbar">
             <div class="topbar-left">
                 <button id="mobileMenuToggle" class="mobile-menu-toggle" type="button">☰</button>
@@ -81,6 +73,35 @@
             </div>
 
             <div class="topbar-right">
+                <!-- LIVE NOTIFICATION BELL -->
+                <div class="notification-bell-wrap">
+                    <button
+                        type="button"
+                        class="notification-bell-btn"
+                        id="notificationBellToggle"
+                        aria-label="Open notifications"
+                    >
+                        🔔
+                        <span
+                            class="notification-bell-badge {% if not unread_notification_count %}is-hidden{% endif %}"
+                            id="notificationBellBadge"
+                        >
+                            {{ unread_notification_count|default:0 }}
+                        </span>
+                    </button>
+
+                    <div class="notification-dropdown" id="notificationDropdown">
+                        <div class="notification-dropdown-head">
+                            <strong>Notifications</strong>
+                            <a href="{% url 'notifications' %}" class="text-link">View all</a>
+                        </div>
+
+                        <div class="notification-dropdown-list" id="notificationDropdownList">
+                            <div class="notification-dropdown-empty">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="topbar-user">
                     <span>{{ request.user.get_full_name|default:request.user.username }}</span>
                     <small>{{ request.user.role|title }}</small>
@@ -93,7 +114,6 @@
             </div>
         </header>
 
-        <!-- MESSAGES -->
         {% if messages %}
         <div class="message-stack">
             {% for message in messages %}
@@ -102,17 +122,13 @@
         </div>
         {% endif %}
 
-        <!-- CONTENT -->
         <main class="page-content">
             {% block content %}{% endblock %}
         </main>
-
     </div>
 </div>
 
 {% else %}
-
-<!-- AUTH -->
 <div class="auth-shell">
     {% if messages %}
     <div class="message-stack">
@@ -124,12 +140,12 @@
 
     {% block auth_content %}{% endblock %}
 </div>
-
 {% endif %}
 
-<!-- JS -->
+<script>
+    window.notificationFeedUrl = "{% url 'notification-feed-api' %}";
+</script>
 <script src="{% static 'rentals/js/app.js' %}"></script>
 {% block extra_js %}{% endblock %}
-
 </body>
 </html>
