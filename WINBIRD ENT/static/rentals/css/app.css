@@ -1539,3 +1539,50 @@ th {
         width: 100%;
     }
 }
+.booking-top-sections {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    align-items: start;
+}
+
+.booking-panel-head {
+    align-items: center;
+}
+
+.booking-form-page {
+    gap: 16px;
+}
+
+.booking-items-panel .formset-row {
+    margin-bottom: 12px;
+}
+
+.booking-item-grid {
+    align-items: end;
+}
+
+@media (max-width: 768px) {
+    .booking-top-sections {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .booking-panel-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .booking-panel-head .secondary-btn {
+        width: 100%;
+    }
+
+    .booking-form-page {
+        gap: 14px;
+    }
+
+    .booking-items-panel .formset-row {
+        margin-bottom: 10px;
+    }
+}
