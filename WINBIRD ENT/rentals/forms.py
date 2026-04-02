@@ -120,17 +120,18 @@ PriceOptionFormSet = inlineformset_factory(
 class BookingCreateForm(StyledFieldsMixin, forms.ModelForm):
     customer_name = forms.CharField(max_length=150)
     customer_phone = forms.CharField(max_length=30)
+    customer_location = forms.CharField(max_length=255, required=False)
+    emergency_contact_name = forms.CharField(max_length=150, required=False)
+    emergency_contact_phone = forms.CharField(max_length=30, required=False)
 
     class Meta:
         model = Booking
-        fields = ["event_date", "return_due_date", "notes"]
+        fields = ["event_date", "return_due_date", "event_location", "notes"]
         widgets = {
             "event_date": forms.DateInput(attrs={"type": "date"}),
             "return_due_date": forms.DateInput(attrs={"type": "date"}),
-          "notes": forms.Textarea(attrs={
-            "placeholder": "Optional notes",
-            "rows": 2
-    })
+            "event_location": forms.TextInput(attrs={"placeholder": "Where items are going"}),
+            "notes": forms.Textarea(attrs={"rows": 2, "placeholder": "Optional notes"}),
         }
 
 
