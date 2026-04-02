@@ -1,31 +1,38 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // =========================
+    // MOBILE SIDEBAR
+    // =========================
+    const toggle = document.getElementById("mobileMenuToggle");
+    const sidebar = document.getElementById("mobileSidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+
+    if (toggle && sidebar && overlay) {
+        toggle.addEventListener("click", () => {
+            sidebar.classList.toggle("open");
+            overlay.classList.toggle("show");
+            document.body.classList.toggle("menu-open");
+        });
+
+        overlay.addEventListener("click", () => {
+            sidebar.classList.remove("open");
+            overlay.classList.remove("show");
+            document.body.classList.remove("menu-open");
+        });
+    }
+
+    // =========================
+    // GENERIC FORMSET
+    // =========================
     document.querySelectorAll("[data-formset]").forEach((formset) => {
         const prefix = formset.dataset.prefix;
         const totalInput = formset.querySelector(`input[name="${prefix}-TOTAL_FORMS"]`);
         const formsContainer = formset.querySelector("[data-formset-forms]");
         const emptyTemplate = formset.querySelector("template[data-empty-form]");
-        const addButton = formset.parentElement.querySelector("[data-add-form]");
+        const addButton = formset.querySelector("[data-add-form]") || formset.parentElement.querySelector("[data-add-form]");
 
         if (!totalInput || !formsContainer || !emptyTemplate || !addButton) {
             return;
         }
-
-        const clearRowInputs = (row) => {
-            row.querySelectorAll("input, select, textarea").forEach((field) => {
-                const name = field.getAttribute("name") || "";
-
-                if (name.endsWith("-DELETE")) {
-                    field.checked = true;
-                    return;
-                }
-
-                if (field.type === "checkbox" || field.type === "radio") {
-                    field.checked = false;
-                } else {
-                    field.value = "";
-                }
-            });
-        };
 
         addButton.addEventListener("click", () => {
             const index = Number(totalInput.value);
@@ -35,13 +42,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const newRow = wrapper.firstElementChild;
 
             if (newRow) {
-                clearRowInputs(newRow);
-                newRow.classList.add("is-new");
-                newRow.addEventListener(
-                    "animationend",
-                    () => newRow.classList.remove("is-new"),
-                    { once: true }
-                );
                 formsContainer.appendChild(newRow);
                 totalInput.value = index + 1;
             }
@@ -49,33 +49,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         formsContainer.addEventListener("click", (event) => {
             const button = event.target.closest("[data-remove-form]");
-            if (!button) {
-                return;
-            }
+            if (!button) return;
 
             const row = button.closest(".formset-row");
-            if (!row) {
-                return;
-            }
+            if (!row) return;
 
             const deleteInput = row.querySelector('input[name$="-DELETE"]');
 
             if (deleteInput) {
                 deleteInput.checked = true;
-                row.querySelectorAll("input, select, textarea").forEach((field) => {
-                    const name = field.getAttribute("name") || "";
-                    if (!name.endsWith("-DELETE")) {
-                        if (field.type === "checkbox" || field.type === "radio") {
-                            field.checked = false;
-                        } else {
-                            field.value = "";
-                        }
-                    }
-                });
-                row.classList.add("is-removing");
-                window.setTimeout(() => {
-                    row.style.display = "none";
-                }, 180);
+                row.style.display = "none";
             } else {
                 row.remove();
                 totalInput.value = Math.max(0, Number(totalInput.value) - 1);
@@ -83,6 +66,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // =========================
+    // AVAILABILITY CHECKER
+    // =========================
     document.querySelectorAll("[data-availability-checker]").forEach((checker) => {
         const endpoint = checker.dataset.url;
         const trigger = checker.querySelector("[data-check-availability]");
@@ -94,26 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!endpoint || !trigger || !feedback || !results || !eventDateInput || !returnDateInput) {
             return;
         }
-
-        const renderItems = (items) => {
-            if (!items.length) {
-                results.innerHTML = '<p class="muted-copy muted-copy-dark">No inventory items are available to show.</p>';
-                return;
-            }
-
-            results.innerHTML = items
-                .map((item) => `
-                    <article class="availability-card ${item.status}">
-                        <div class="availability-card-head">
-                            <strong>${item.item}</strong>
-                            <span>${item.available} of ${item.total} free</span>
-                        </div>
-                        <p>${item.category}</p>
-                        <small>${item.price_labels || "No active price options configured."}</small>
-                    </article>
-                `)
-                .join("");
-        };
 
         trigger.addEventListener("click", async () => {
             const eventDate = eventDateInput.value;
@@ -133,6 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const response = await fetch(url, {
                     headers: { "X-Requested-With": "XMLHttpRequest" },
                 });
+
                 const payload = await response.json();
 
                 if (!response.ok) {
@@ -140,8 +107,26 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
 
+                const items = payload.items || [];
+
                 feedback.textContent = `Availability for ${eventDate} to ${returnDate}`;
-                renderItems(payload.items || []);
+
+                if (!items.length) {
+                    results.innerHTML = '<p class="muted-copy">No inventory items are available to show.</p>';
+                    return;
+                }
+
+                results.innerHTML = items.map((item) => `
+                    <article class="availability-card ${item.status}">
+                        <div class="availability-card-head">
+                            <strong>${item.item}</strong>
+                            <span>${item.available} of ${item.total} free</span>
+                        </div>
+                        <p>${item.category}</p>
+                        <small>${item.price_labels || "No active price options configured."}</small>
+                    </article>
+                `).join("");
+
             } catch (error) {
                 feedback.textContent = "Unable to check availability right now.";
             }
