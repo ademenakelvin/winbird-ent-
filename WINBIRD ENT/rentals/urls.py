@@ -32,6 +32,7 @@ from .views import (
     notification_open,
     report_export,
     staff_account_action,
+    topbar_notifications_api,
 )
 
 urlpatterns = [
@@ -66,4 +67,5 @@ urlpatterns = [
     path("settings/", SettingsView.as_view(), name="settings"),
     path("settings/staff/<int:pk>/edit/", StaffAccountUpdateView.as_view(), name="staff-edit"),
     path("settings/staff/<int:pk>/action/<str:action>/", staff_account_action, name="staff-action"),
+    path("api/topbar-notifications/", views.topbar_notifications_api, name="topbar-notifications-api"),
 ]
