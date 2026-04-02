@@ -51,10 +51,9 @@ class User(AbstractUser):
 class Customer(models.Model):
     name = models.CharField(max_length=150)
     phone = models.CharField(max_length=30, unique=True)
-    customer_location = models.CharField(max_length=255, blank=True)
+    location = models.CharField(max_length=255, blank=True)
     emergency_contact_name = models.CharField(max_length=150, blank=True)
     emergency_contact_phone = models.CharField(max_length=30, blank=True)
-    event_location = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
