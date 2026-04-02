@@ -9,9 +9,12 @@
     <div>
         <p class="eyebrow">{{ dashboard_kicker }}</p>
         <h3>Control confirmations, stock risks, and business performance from one view.</h3>
-        <p class="hero-copy">This dashboard is tuned for admins managing confirmations, revenue visibility, team usage, and inventory pressure.</p>
+        <p class="hero-copy">
+            This dashboard is tuned for admins managing confirmations, revenue visibility, team usage, and inventory pressure.
+        </p>
     </div>
-    <div class="chip-row">
+
+    <div class="hero-actions">
         <a class="primary-btn" href="{% url 'booking-list' %}">Review bookings</a>
         <a class="secondary-btn" href="{% url 'reports' %}">Open reports</a>
         <a class="secondary-btn" href="{% url 'settings' %}#staff-management">Manage staff</a>
@@ -24,16 +27,19 @@
         <strong>{{ pending_bookings }}</strong>
         <span>Bookings waiting for confirmation.</span>
     </article>
+
     <article class="stat-card">
         <p>Outstanding Balances</p>
         <strong>{{ outstanding_count }}</strong>
         <span>Bookings that still need payment follow-up.</span>
     </article>
+
     <article class="stat-card">
         <p>Revenue Recorded</p>
         <strong>GHS {{ total_revenue|floatformat:2 }}</strong>
         <span>Based on all manual payments captured so far.</span>
     </article>
+
     <article class="stat-card">
         <p>Active Staff</p>
         <strong>{{ staff_count }}</strong>
@@ -50,6 +56,7 @@
             </div>
             <a class="secondary-btn" href="{% url 'booking-list' %}?status=PENDING">View all pending</a>
         </div>
+
         <div class="table-wrap">
             <table>
                 <thead>
@@ -74,12 +81,14 @@
                                         {% csrf_token %}
                                         <button class="secondary-btn" type="submit">Confirm</button>
                                     </form>
-                                    <a href="{% url 'booking-detail' booking.pk %}">Open</a>
+                                    <a class="text-btn" href="{% url 'booking-detail' booking.pk %}">Open</a>
                                 </div>
                             </td>
                         </tr>
                     {% empty %}
-                        <tr><td colspan="5">No bookings are waiting for confirmation.</td></tr>
+                        <tr>
+                            <td colspan="5">No bookings are waiting for confirmation.</td>
+                        </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -94,6 +103,7 @@
             </div>
             <a class="secondary-btn" href="{% url 'payment-list' %}">Payments</a>
         </div>
+
         <div class="table-wrap">
             <table>
                 <thead>
@@ -110,17 +120,23 @@
                         <tr>
                             <td>#{{ booking.pk }}</td>
                             <td>{{ booking.customer.name }}</td>
-                            <td><span class="status-pill" data-status="{{ booking.payment_status }}">{{ booking.get_payment_status_display }}</span></td>
+                            <td>
+                                <span class="status-pill" data-status="{{ booking.payment_status }}">
+                                    {{ booking.get_payment_status_display }}
+                                </span>
+                            </td>
                             <td>GHS {{ booking.balance_due|floatformat:2 }}</td>
                             <td>
                                 <div class="chip-row">
-                                    <a href="{% url 'payment-add' booking.pk %}">Record payment</a>
-                                    <a href="{% url 'booking-detail' booking.pk %}">Open</a>
+                                    <a class="secondary-btn" href="{% url 'payment-add' booking.pk %}">Record payment</a>
+                                    <a class="text-btn" href="{% url 'booking-detail' booking.pk %}">Open</a>
                                 </div>
                             </td>
                         </tr>
                     {% empty %}
-                        <tr><td colspan="5">All visible bookings are fully paid.</td></tr>
+                        <tr>
+                            <td colspan="5">All visible bookings are fully paid.</td>
+                        </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -136,6 +152,7 @@
                 <h3>Low stock items</h3>
             </div>
         </div>
+
         <div class="stack-list">
             {% for record in low_stock_items %}
                 <div class="stack-item">
@@ -155,6 +172,7 @@
                 <h3>Latest payments</h3>
             </div>
         </div>
+
         <div class="stack-list">
             {% for payment in recent_payments %}
                 <div class="stack-item">
@@ -175,11 +193,19 @@
                 <h3>Team activity</h3>
             </div>
         </div>
+
         <div class="stack-list">
             {% for entry in recent_activity %}
                 <div class="stack-item">
                     <strong>{{ entry.action }}</strong>
-                    <small>{% if entry.user %}{{ entry.user }}{% else %}System{% endif %} | {{ entry.created_at|date:"M j, Y H:i" }}</small>
+                    <small>
+                        {% if entry.user %}
+                            {{ entry.user }}
+                        {% else %}
+                            System
+                        {% endif %}
+                        | {{ entry.created_at|date:"M j, Y H:i" }}
+                    </small>
                 </div>
             {% empty %}
                 <p class="muted-copy">No activity logged yet.</p>
