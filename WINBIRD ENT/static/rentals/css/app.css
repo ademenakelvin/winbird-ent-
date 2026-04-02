@@ -1490,3 +1490,90 @@ textarea.form-control {
         scroll-behavior: auto !important;
     }
 }
+/* NOTIFICATIONS MOBILE LAYOUT FIX */
+.notification-toolbar,
+.notification-filters,
+.notification-filter-row,
+.filter-toolbar,
+.filter-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .notification-toolbar,
+    .notification-filters,
+    .notification-filter-row,
+    .filter-toolbar,
+    .filter-stack {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .notification-toolbar .secondary-btn,
+    .notification-toolbar .filter-chip,
+    .notification-filters .filter-chip,
+    .notification-filter-row .filter-chip,
+    .filter-toolbar .filter-chip,
+    .filter-stack .filter-chip {
+        width: auto !important;
+        min-width: 0;
+        flex: 0 0 auto;
+    }
+
+    .notification-panel .panel-head,
+    .notifications-panel .panel-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .notification-panel .panel-head > div,
+    .notifications-panel .panel-head > div {
+        width: 100%;
+    }
+
+    .notification-toolbar form,
+    .notification-filters form,
+    .notification-filter-row form,
+    .filter-toolbar form,
+    .filter-stack form {
+        margin: 0;
+    }
+
+    .notification-toolbar {
+        width: 100%;
+    }
+
+    .notification-chip-group,
+    .notification-state-group,
+    .notification-kind-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .notification-empty,
+    .notification-list,
+    .notification-group {
+        margin-top: 12px;
+    }
+}
+@media (max-width: 768px) {
+    .chip-row {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .chip-row .filter-chip,
+    .chip-row .secondary-btn,
+    .chip-row .primary-btn {
+        width: auto !important;
+    }
+}
