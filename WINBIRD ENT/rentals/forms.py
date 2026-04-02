@@ -9,9 +9,6 @@ from .models import Booking, Inventory, Payment, PriceOption, RentalItem
 User = get_user_model()
 
 
-# =============================
-# STYLING MIXIN
-# =============================
 class StyledFieldsMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -28,25 +25,17 @@ class StyledFieldsMixin:
                 widget.attrs["class"] = "form-control"
 
 
-# =============================
-# LOGIN
-# =============================
 class LoginForm(StyledFieldsMixin, AuthenticationForm):
     username = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Staff username"}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "Password"}))
 
 
-# =============================
-# RENTAL ITEM
-# =============================
 class RentalItemForm(StyledFieldsMixin, forms.ModelForm):
     class Meta:
         model = RentalItem
         fields = ["name", "is_active"]
 
-# =============================
-# INVENTORY
-# =============================
+
 class InventoryForm(StyledFieldsMixin, forms.ModelForm):
     class Meta:
         model = Inventory
@@ -57,9 +46,6 @@ class InventoryForm(StyledFieldsMixin, forms.ModelForm):
         }
 
 
-# =============================
-# PRICE OPTION (SINGLE ONLY)
-# =============================
 class PriceOptionForm(StyledFieldsMixin, forms.ModelForm):
     class Meta:
         model = PriceOption
@@ -87,19 +73,34 @@ class BasePriceOptionFormSet(BaseInlineFormSet):
     def clean(self):
         super().clean()
 
-        if not self.forms:
-            raise forms.ValidationError("Add a price option.")
+        valid_rows = 0
+        default_count = 0
 
-        form = self.forms[0]
+        for form in self.forms:
+            if not hasattr(form, "cleaned_data"):
+                continue
+            if not form.cleaned_data:
+                continue
 
-        if not hasattr(form, "cleaned_data"):
-            return
+            label = form.cleaned_data.get("label")
+            amount = form.cleaned_data.get("amount")
 
-        if not form.cleaned_data.get("label") or form.cleaned_data.get("amount") in (None, ""):
-            raise forms.ValidationError("Price label and amount are required.")
+            if not label or amount in (None, ""):
+                continue
 
-        if not form.cleaned_data.get("is_default"):
-            raise forms.ValidationError("Default price must be selected.")
+            valid_rows += 1
+
+            if form.cleaned_data.get("is_default"):
+                default_count += 1
+
+        if valid_rows == 0:
+            raise forms.ValidationError("Add at least one price option.")
+
+        if default_count == 0:
+            raise forms.ValidationError("Select one default price option.")
+
+        if default_count > 1:
+            raise forms.ValidationError("Only one price option can be the default.")
 
 
 PriceOptionFormSet = inlineformset_factory(
@@ -116,9 +117,6 @@ PriceOptionFormSet = inlineformset_factory(
 )
 
 
-# =============================
-# BOOKING FORM
-# =============================
 class BookingCreateForm(StyledFieldsMixin, forms.ModelForm):
     customer_name = forms.CharField(max_length=150)
     customer_phone = forms.CharField(max_length=30)
@@ -133,12 +131,16 @@ class BookingCreateForm(StyledFieldsMixin, forms.ModelForm):
         }
 
 
-# =============================
-# BOOKING ITEMS
-# =============================
 class RentalItemChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
-        return f"{obj.name} (Stock: {obj.quantity_total})"
+        quantity_total = getattr(obj, "quantity_total", None)
+        quantity_available = getattr(obj, "quantity_available", None)
+
+        if quantity_total is None and hasattr(obj, "inventory"):
+            quantity_total = obj.inventory.quantity_total
+            quantity_available = obj.inventory.quantity_available
+
+        return f"{obj.name} (Stock: {quantity_total}, Available now: {quantity_available})"
 
 
 class PriceOptionChoiceField(forms.ModelChoiceField):
@@ -147,9 +149,23 @@ class PriceOptionChoiceField(forms.ModelChoiceField):
 
 
 class BookingItemForm(StyledFieldsMixin, forms.Form):
-    rental_item = RentalItemChoiceField(queryset=RentalItem.objects.filter(is_active=True))
-    price_option = PriceOptionChoiceField(queryset=PriceOption.objects.filter(is_active=True))
-    quantity = forms.IntegerField(min_value=1)
+    rental_item = RentalItemChoiceField(
+        queryset=RentalItem.objects.filter(is_active=True).select_related("inventory")
+    )
+    price_option = PriceOptionChoiceField(
+        queryset=PriceOption.objects.filter(is_active=True).select_related("rental_item")
+    )
+    quantity = forms.IntegerField(min_value=1, widget=forms.NumberInput(attrs={"min": 1}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.is_bound:
+            item_id = self.data.get(self.add_prefix("rental_item"))
+            if item_id:
+                self.fields["price_option"].queryset = PriceOption.objects.filter(
+                    rental_item_id=item_id,
+                    is_active=True,
+                ).select_related("rental_item")
 
     def clean(self):
         cleaned_data = super().clean()
@@ -163,22 +179,53 @@ class BookingItemForm(StyledFieldsMixin, forms.Form):
 
 
 class BaseBookingItemFormSet(BaseFormSet):
+    def __init__(self, *args, event_date=None, return_due_date=None, booking=None, **kwargs):
+        self.event_date = event_date
+        self.return_due_date = return_due_date
+        self.booking = booking
+        super().__init__(*args, **kwargs)
+
     def clean(self):
         if any(self.errors):
             return
 
-        valid = 0
+        total_rows = 0
+        requested_quantities = {}
 
         for form in self.forms:
+            if not hasattr(form, "cleaned_data"):
+                continue
             if not form.cleaned_data:
                 continue
             if form.cleaned_data.get("DELETE"):
                 continue
 
-            valid += 1
+            rental_item = form.cleaned_data.get("rental_item")
+            quantity = form.cleaned_data.get("quantity")
 
-        if valid == 0:
+            if not rental_item or not quantity:
+                continue
+
+            total_rows += 1
+            requested_quantities[rental_item] = requested_quantities.get(rental_item, 0) + quantity
+
+        if total_rows == 0:
             raise forms.ValidationError("Add at least one item.")
+
+        if not self.event_date or not self.return_due_date:
+            return
+
+        for rental_item, quantity in requested_quantities.items():
+            inventory = Inventory.objects.get(rental_item=rental_item)
+            available = inventory.available_for_range(
+                self.event_date,
+                self.return_due_date,
+                exclude_booking=self.booking,
+            )
+            if quantity > available:
+                raise forms.ValidationError(
+                    f"Only {available} unit(s) of {rental_item.name} are available for the selected dates."
+                )
 
 
 BookingItemFormSet = formset_factory(
@@ -189,38 +236,46 @@ BookingItemFormSet = formset_factory(
 )
 
 
-# =============================
-# PAYMENT
-# =============================
 class PaymentForm(StyledFieldsMixin, forms.ModelForm):
     class Meta:
         model = Payment
         fields = ["amount", "paid_on", "notes"]
         widgets = {
-            "amount": forms.NumberInput(attrs={"step": "0.01"}),
+            "amount": forms.NumberInput(attrs={"step": "0.01", "min": 0.01}),
             "paid_on": forms.DateInput(attrs={"type": "date"}),
+            "notes": forms.Textarea(attrs={"placeholder": "Optional payment note"}),
         }
 
 
-# =============================
-# STAFF ACCOUNT
-# =============================
 class StaffAccountForm(StyledFieldsMixin, forms.ModelForm):
-    password1 = forms.CharField(widget=forms.PasswordInput())
-    password2 = forms.CharField(widget=forms.PasswordInput())
+    password1 = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "Temporary password"}))
+    password2 = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "Repeat password"}))
 
     class Meta:
         model = User
         fields = ["username", "first_name", "last_name", "email", "is_booking_approver"]
+        widgets = {
+            "username": forms.TextInput(attrs={"placeholder": "Staff username"}),
+            "first_name": forms.TextInput(attrs={"placeholder": "First name"}),
+            "last_name": forms.TextInput(attrs={"placeholder": "Last name"}),
+            "email": forms.EmailInput(attrs={"placeholder": "Email address"}),
+        }
 
     def clean_password2(self):
-        if self.cleaned_data.get("password1") != self.cleaned_data.get("password2"):
-            raise forms.ValidationError("Passwords do not match.")
-        return self.cleaned_data["password2"]
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+
+        if password1 != password2:
+            raise forms.ValidationError("The two password fields must match.")
+
+        validate_password(password2)
+        return password2
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.role = User.Role.STAFF
+        user.is_staff = False
+        user.is_superuser = False
         user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
@@ -231,3 +286,9 @@ class StaffAccountUpdateForm(StyledFieldsMixin, forms.ModelForm):
     class Meta:
         model = User
         fields = ["username", "first_name", "last_name", "email", "is_booking_approver", "is_active"]
+        widgets = {
+            "username": forms.TextInput(attrs={"placeholder": "Staff username"}),
+            "first_name": forms.TextInput(attrs={"placeholder": "First name"}),
+            "last_name": forms.TextInput(attrs={"placeholder": "Last name"}),
+            "email": forms.EmailInput(attrs={"placeholder": "Email address"}),
+        }
