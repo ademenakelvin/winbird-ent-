@@ -74,7 +74,7 @@ class Category(models.Model):
 
 
 class RentalItem(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="items")
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=150, unique=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
