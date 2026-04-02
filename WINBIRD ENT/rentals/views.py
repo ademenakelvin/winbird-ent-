@@ -576,7 +576,6 @@ class BookingCreateView(LoginRequiredMixin, View):
                 for cleaned_data in item_formset.cleaned_data:
                     if not cleaned_data or cleaned_data.get("DELETE"):
                         continue
-
                     BookingItem.objects.create(
                         booking=booking,
                         rental_item=cleaned_data["rental_item"],
@@ -704,7 +703,7 @@ class CustomerDetailView(LoginRequiredMixin, DetailView):
                     Decimal("0.00"),
                 ),
                 "spotlight_booking": spotlight_booking,
-                "spotlight_title": "Next booking" if spotlight_booking and spotlight_booking.event_date >= today else "Latest booking",
+                "spotlight_title": "Next booking" if spotlight_booking and booking.event_date >= today else "Latest booking",
             }
         )
         return context
@@ -862,7 +861,7 @@ def booking_availability(request):
         rows.append(
             {
                 "item": rental_item.name,
-                "category": inventory.rental_item.category.name if inventory.rental_item.category else "Uncategorized",
+                "category": rental_item.category.name if rental_item.category else "Uncategorized",
                 "available": available,
                 "total": inventory.quantity_total,
                 "price_labels": price_labels,
@@ -1006,6 +1005,7 @@ def report_export(request, report_type):
                 "Phone",
                 "Event Date",
                 "Return Due",
+                "Event Location",
                 "Status",
                 "Payment Status",
                 "Total Amount",
@@ -1021,6 +1021,7 @@ def report_export(request, report_type):
                     booking.customer.phone,
                     booking.event_date,
                     booking.return_due_date,
+                    booking.event_location,
                     booking.get_status_display(),
                     booking.get_payment_status_display(),
                     booking.total_amount,
