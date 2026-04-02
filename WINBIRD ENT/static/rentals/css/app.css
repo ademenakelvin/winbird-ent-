@@ -1289,3 +1289,17 @@ textarea:focus {
         scroll-behavior: auto !important;
     }
 }
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+@media (max-width: 768px) {
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+}
