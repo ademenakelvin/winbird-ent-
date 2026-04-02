@@ -7,10 +7,12 @@
 {% block content %}
 <form method="post" class="stacked-form">
     {% csrf_token %}
-    {% if form.non_field_errors or inventory_form.non_field_errors %}
+
+    {% if form.non_field_errors or inventory_form.non_field_errors or price_formset.non_form_errors %}
         <div class="form-errors">
             {{ form.non_field_errors }}
             {{ inventory_form.non_field_errors }}
+            {{ price_formset.non_form_errors }}
         </div>
     {% endif %}
 
@@ -22,17 +24,24 @@
                     <h3>Basic catalog record</h3>
                 </div>
             </div>
+
             <div class="field-grid">
                 <div class="field-group">
                     <label for="{{ form.category.id_for_label }}">Category</label>
                     {{ form.category }}
-                    {% if form.category.errors %}<div class="field-error">{{ form.category.errors|join:", " }}</div>{% endif %}
+                    {% if form.category.errors %}
+                        <div class="field-error">{{ form.category.errors|join:", " }}</div>
+                    {% endif %}
                 </div>
+
                 <div class="field-group">
                     <label for="{{ form.name.id_for_label }}">Item name</label>
                     {{ form.name }}
-                    {% if form.name.errors %}<div class="field-error">{{ form.name.errors|join:", " }}</div>{% endif %}
+                    {% if form.name.errors %}
+                        <div class="field-error">{{ form.name.errors|join:", " }}</div>
+                    {% endif %}
                 </div>
+
                 <div class="field-group checkbox-group">
                     {{ form.is_active }}
                     <label for="{{ form.is_active.id_for_label }}">Active for booking</label>
@@ -47,19 +56,28 @@
                     <h3>Current stock counts</h3>
                 </div>
             </div>
+
             <div class="field-grid">
                 <div class="field-group">
                     <label for="{{ inventory_form.quantity_total.id_for_label }}">Total quantity</label>
                     {{ inventory_form.quantity_total }}
-                    {% if inventory_form.quantity_total.errors %}<div class="field-error">{{ inventory_form.quantity_total.errors|join:", " }}</div>{% endif %}
+                    {% if inventory_form.quantity_total.errors %}
+                        <div class="field-error">{{ inventory_form.quantity_total.errors|join:", " }}</div>
+                    {% endif %}
                 </div>
+
                 <div class="field-group">
                     <label for="{{ inventory_form.quantity_available.id_for_label }}">Available now</label>
                     {{ inventory_form.quantity_available }}
-                    {% if inventory_form.quantity_available.errors %}<div class="field-error">{{ inventory_form.quantity_available.errors|join:", " }}</div>{% endif %}
+                    {% if inventory_form.quantity_available.errors %}
+                        <div class="field-error">{{ inventory_form.quantity_available.errors|join:", " }}</div>
+                    {% endif %}
                 </div>
             </div>
-            <p class="muted-copy">Use total stock for date-based availability checks. Available now is the on-hand count after items go out and come back.</p>
+
+            <p class="muted-copy">
+                Use total stock for date-based availability checks. Available now is the on-hand count after items go out and come back.
+            </p>
         </article>
     </section>
 
@@ -72,38 +90,52 @@
             <button type="button" class="secondary-btn" data-add-form>Add price option</button>
         </div>
 
-        {% if price_formset.non_form_errors %}
-            <div class="form-errors">{{ price_formset.non_form_errors }}</div>
-        {% endif %}
-
         <div class="formset-block" data-formset data-prefix="{{ price_formset.prefix }}">
             {{ price_formset.management_form }}
+
             <div data-formset-forms>
                 {% for price_form in price_formset %}
                     <div class="formset-row">
-                        {% for hidden in price_form.hidden_fields %}{{ hidden }}{% endfor %}
-                        <div class="field-grid four-up">
+                        {% for hidden in price_form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+
+                        {% if price_form.non_field_errors %}
+                            <div class="field-error">{{ price_form.non_field_errors }}</div>
+                        {% endif %}
+
+                        <div class="field-grid two-column">
                             <div class="field-group">
                                 <label for="{{ price_form.label.id_for_label }}">Label</label>
                                 {{ price_form.label }}
-                                {% if price_form.label.errors %}<div class="field-error">{{ price_form.label.errors|join:", " }}</div>{% endif %}
+                                {% if price_form.label.errors %}
+                                    <div class="field-error">{{ price_form.label.errors|join:", " }}</div>
+                                {% endif %}
                             </div>
+
                             <div class="field-group">
                                 <label for="{{ price_form.amount.id_for_label }}">Amount (GHS)</label>
                                 {{ price_form.amount }}
-                                {% if price_form.amount.errors %}<div class="field-error">{{ price_form.amount.errors|join:", " }}</div>{% endif %}
+                                {% if price_form.amount.errors %}
+                                    <div class="field-error">{{ price_form.amount.errors|join:", " }}</div>
+                                {% endif %}
                             </div>
+                        </div>
+
+                        <div class="field-grid two-column">
                             <div class="field-group checkbox-group">
                                 {{ price_form.is_default }}
                                 <label for="{{ price_form.is_default.id_for_label }}">Default price</label>
                             </div>
+
                             <div class="field-group checkbox-group">
                                 {{ price_form.is_active }}
                                 <label for="{{ price_form.is_active.id_for_label }}">Active</label>
                             </div>
                         </div>
+
                         <div class="row-actions">
-                            <div class="visually-hidden">{{ price_form.DELETE }}</div>
+                            {{ price_form.DELETE }}
                             <button type="button" class="text-btn" data-remove-form>Remove row</button>
                         </div>
                     </div>
@@ -112,27 +144,36 @@
 
             <template data-empty-form>
                 <div class="formset-row">
-                    {% for hidden in price_formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
-                    <div class="field-grid four-up">
+                    {% for hidden in price_formset.empty_form.hidden_fields %}
+                        {{ hidden }}
+                    {% endfor %}
+
+                    <div class="field-grid two-column">
                         <div class="field-group">
-                            <label for="{{ price_formset.empty_form.label.id_for_label }}">Label</label>
+                            <label>Label</label>
                             {{ price_formset.empty_form.label }}
                         </div>
+
                         <div class="field-group">
-                            <label for="{{ price_formset.empty_form.amount.id_for_label }}">Amount (GHS)</label>
+                            <label>Amount (GHS)</label>
                             {{ price_formset.empty_form.amount }}
                         </div>
+                    </div>
+
+                    <div class="field-grid two-column">
                         <div class="field-group checkbox-group">
                             {{ price_formset.empty_form.is_default }}
-                            <label for="{{ price_formset.empty_form.is_default.id_for_label }}">Default price</label>
+                            <label>Default price</label>
                         </div>
+
                         <div class="field-group checkbox-group">
                             {{ price_formset.empty_form.is_active }}
-                            <label for="{{ price_formset.empty_form.is_active.id_for_label }}">Active</label>
+                            <label>Active</label>
                         </div>
                     </div>
+
                     <div class="row-actions">
-                        <div class="visually-hidden">{{ price_formset.empty_form.DELETE }}</div>
+                        {{ price_formset.empty_form.DELETE }}
                         <button type="button" class="text-btn" data-remove-form>Remove row</button>
                     </div>
                 </div>
