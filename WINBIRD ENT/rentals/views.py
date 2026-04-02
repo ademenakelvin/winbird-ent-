@@ -33,7 +33,18 @@ from .forms import (
     StaffAccountForm,
     StaffAccountUpdateForm,
 )
-from .models import ActivityLog, Booking, BookingItem, Category, Customer, Inventory, Notification, Payment, RentalItem, User
+from .models import (
+    ActivityLog,
+    Booking,
+    BookingItem,
+    Category,
+    Customer,
+    Inventory,
+    Notification,
+    Payment,
+    RentalItem,
+    User,
+)
 from .notification_utils import (
     GENERAL_NOTIFICATION_KIND_LABELS,
     filter_notifications,
@@ -239,16 +250,22 @@ class RentalItemCreateView(LoginRequiredMixin, AdminRequiredMixin, View):
         form = RentalItemForm(request.POST)
         inventory_form = InventoryForm(request.POST)
         price_formset = PriceOptionFormSet(request.POST, prefix="prices")
+
         if form.is_valid() and inventory_form.is_valid() and price_formset.is_valid():
             with transaction.atomic():
-                item = form.save()
+                item = form.save(commit=False)
+                item.category = Category.objects.first()
+                item.save()
+
                 inventory = item.inventory
                 inventory.quantity_total = inventory_form.cleaned_data["quantity_total"]
                 inventory.quantity_available = inventory_form.cleaned_data["quantity_available"]
                 inventory.save()
+
                 price_formset.instance = item
                 price_formset.save()
                 log_activity(request.user, f"Created rental item {item.name}.")
+
             messages.success(request, "Rental item created successfully.")
             return redirect("item-list")
 
@@ -271,6 +288,7 @@ class RentalItemUpdateView(LoginRequiredMixin, AdminRequiredMixin, View):
         return get_object_or_404(RentalItem, pk=pk)
 
     def get(self, request, pk):
+        ensure_default_category()
         item = self.get_object(pk)
         inventory, _ = Inventory.objects.get_or_create(
             rental_item=item,
@@ -289,6 +307,7 @@ class RentalItemUpdateView(LoginRequiredMixin, AdminRequiredMixin, View):
         )
 
     def post(self, request, pk):
+        ensure_default_category()
         item = self.get_object(pk)
         inventory, _ = Inventory.objects.get_or_create(
             rental_item=item,
@@ -297,12 +316,18 @@ class RentalItemUpdateView(LoginRequiredMixin, AdminRequiredMixin, View):
         form = RentalItemForm(request.POST, instance=item)
         inventory_form = InventoryForm(request.POST, instance=inventory)
         price_formset = PriceOptionFormSet(request.POST, instance=item, prefix="prices")
+
         if form.is_valid() and inventory_form.is_valid() and price_formset.is_valid():
             with transaction.atomic():
-                item = form.save()
+                item = form.save(commit=False)
+                if not item.category_id:
+                    item.category = Category.objects.first()
+                item.save()
+
                 inventory_form.save()
                 price_formset.save()
                 log_activity(request.user, f"Updated rental item {item.name}.")
+
             messages.success(request, "Rental item updated successfully.")
             return redirect("item-list")
 
@@ -806,7 +831,7 @@ def booking_availability(request):
     return_due_date = parse_date(request.GET.get("return_due_date", ""))
 
     if not event_date or not return_due_date:
-        return JsonResponse({"error": "Choose both event and return dates first."}, status=400)
+        return JsonResponse({"error": "Choose both dates before checking availability."}, status=400)
 
     if return_due_date < event_date:
         return JsonResponse({"error": "Return due date cannot be earlier than the event date."}, status=400)
@@ -825,7 +850,7 @@ def booking_availability(request):
         rows.append(
             {
                 "item": rental_item.name,
-                "category": rental_item.category.name,
+                "category": inventory.rental_item.category.name if inventory.rental_item.category else "Uncategorized",
                 "available": available,
                 "total": inventory.quantity_total,
                 "price_labels": price_labels,
