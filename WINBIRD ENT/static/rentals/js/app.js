@@ -10,13 +10,32 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        const clearRowInputs = (row) => {
+            row.querySelectorAll("input, select, textarea").forEach((field) => {
+                const name = field.getAttribute("name") || "";
+
+                if (name.endsWith("-DELETE")) {
+                    field.checked = true;
+                    return;
+                }
+
+                if (field.type === "checkbox" || field.type === "radio") {
+                    field.checked = false;
+                } else {
+                    field.value = "";
+                }
+            });
+        };
+
         addButton.addEventListener("click", () => {
             const index = Number(totalInput.value);
             const html = emptyTemplate.innerHTML.replace(/__prefix__/g, index);
             const wrapper = document.createElement("div");
             wrapper.innerHTML = html.trim();
             const newRow = wrapper.firstElementChild;
+
             if (newRow) {
+                clearRowInputs(newRow);
                 newRow.classList.add("is-new");
                 newRow.addEventListener(
                     "animationend",
@@ -24,8 +43,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     { once: true }
                 );
                 formsContainer.appendChild(newRow);
+                totalInput.value = index + 1;
             }
-            totalInput.value = index + 1;
         });
 
         formsContainer.addEventListener("click", (event) => {
@@ -39,15 +58,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const deleteInput = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+            const deleteInput = row.querySelector('input[name$="-DELETE"]');
+
             if (deleteInput) {
                 deleteInput.checked = true;
+                row.querySelectorAll("input, select, textarea").forEach((field) => {
+                    const name = field.getAttribute("name") || "";
+                    if (!name.endsWith("-DELETE")) {
+                        if (field.type === "checkbox" || field.type === "radio") {
+                            field.checked = false;
+                        } else {
+                            field.value = "";
+                        }
+                    }
+                });
+                row.classList.add("is-removing");
+                window.setTimeout(() => {
+                    row.style.display = "none";
+                }, 180);
+            } else {
+                row.remove();
+                totalInput.value = Math.max(0, Number(totalInput.value) - 1);
             }
-
-            row.classList.add("is-removing");
-            window.setTimeout(() => {
-                row.hidden = true;
-            }, 180);
         });
     });
 
