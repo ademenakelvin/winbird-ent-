@@ -84,17 +84,17 @@
 </div>
 
 {% else %}
-<main class="auth-shell">
+<div class="auth-shell">
     {% if messages %}
-        <div class="message-stack">
-            {% for message in messages %}
-                <div class="message {{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        </div>
+    <div class="message-stack">
+        {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
     {% endif %}
 
-    {% block content %}{% endblock %}
-</main>
+    {% block auth_content %}{% endblock %}
+</div>
 {% endif %}
 
 <script>
