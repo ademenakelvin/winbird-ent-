@@ -1586,3 +1586,9 @@ th {
         margin-bottom: 10px;
     }
 }
+textarea.form-control {
+    overflow: hidden;
+    resize: none;
+    min-height: 50px;
+    transition: height 0.15s ease;
+}
