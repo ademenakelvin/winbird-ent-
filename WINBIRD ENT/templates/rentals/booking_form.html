@@ -41,6 +41,30 @@
                         <div class="field-error">{{ form.customer_phone.errors|join:", " }}</div>
                     {% endif %}
                 </div>
+
+                <div class="field-group full-span">
+                    <label for="{{ form.customer_location.id_for_label }}">Customer location</label>
+                    {{ form.customer_location }}
+                    {% if form.customer_location.errors %}
+                        <div class="field-error">{{ form.customer_location.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="field-group">
+                    <label for="{{ form.emergency_contact_name.id_for_label }}">Emergency contact name</label>
+                    {{ form.emergency_contact_name }}
+                    {% if form.emergency_contact_name.errors %}
+                        <div class="field-error">{{ form.emergency_contact_name.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="field-group">
+                    <label for="{{ form.emergency_contact_phone.id_for_label }}">Emergency contact phone</label>
+                    {{ form.emergency_contact_phone }}
+                    {% if form.emergency_contact_phone.errors %}
+                        <div class="field-error">{{ form.emergency_contact_phone.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
             </div>
         </article>
 
@@ -66,6 +90,14 @@
                     {{ form.return_due_date }}
                     {% if form.return_due_date.errors %}
                         <div class="field-error">{{ form.return_due_date.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="field-group full-span">
+                    <label for="{{ form.event_location.id_for_label }}">Items going to / event location</label>
+                    {{ form.event_location }}
+                    {% if form.event_location.errors %}
+                        <div class="field-error">{{ form.event_location.errors|join:", " }}</div>
                     {% endif %}
                 </div>
 
