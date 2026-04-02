@@ -95,7 +95,6 @@
 
 {% else %}
 
-<!-- AUTH PAGES -->
 <div class="auth-shell">
     {% if messages %}
     <div class="message-stack">
@@ -110,35 +109,8 @@
 
 {% endif %}
 
-<!-- MOBILE MENU SCRIPT -->
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const toggle = document.getElementById("mobileMenuToggle");
-    const sidebar = document.getElementById("mobileSidebar");
-    const overlay = document.getElementById("sidebarOverlay");
-
-    if (!toggle || !sidebar || !overlay) {
-        console.log("Sidebar elements not found");
-        return;
-    }
-
-    toggle.addEventListener("click", function () {
-        sidebar.classList.toggle("open");
-        overlay.classList.toggle("show");
-        document.body.classList.toggle("menu-open");
-    });
-
-    overlay.addEventListener("click", function () {
-        sidebar.classList.remove("open");
-        overlay.classList.remove("show");
-        document.body.classList.remove("menu-open");
-    });
-});
-</script>
-
-<!-- MAIN APP JS (VERY IMPORTANT) -->
+<!-- ONLY JS -->
 <script src="{% static 'rentals/js/app.js' %}"></script>
-
 {% block extra_js %}{% endblock %}
 
 </body>
