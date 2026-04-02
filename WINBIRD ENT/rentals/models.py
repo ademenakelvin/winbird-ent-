@@ -204,10 +204,9 @@ class Booking(models.Model):
     )
     event_date = models.DateField()
     return_due_date = models.DateField()
+    event_location = models.CharField(max_length=255, blank=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
-    payment_status = models.CharField(
-        max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.UNPAID
-    )
+    payment_status = models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.UNPAID)
     notes = models.TextField(blank=True)
     approved_at = models.DateTimeField(blank=True, null=True)
     dispatched_at = models.DateTimeField(blank=True, null=True)
