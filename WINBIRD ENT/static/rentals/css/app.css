@@ -1639,3 +1639,67 @@ textarea.form-control {
         display: block;
     }
 }
+.mobile-menu-toggle {
+    display: none;
+}
+
+.sidebar-overlay {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+        border: 0;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #0f5b4f, #1e7a68);
+        color: #ffffff;
+        font-size: 26px;
+        cursor: pointer;
+        box-shadow: 0 12px 28px rgba(15, 91, 79, 0.22);
+    }
+
+    .sidebar {
+        position: fixed !important;
+        top: 0;
+        left: -290px;
+        width: 270px;
+        height: 100vh;
+        z-index: 1001;
+        overflow-y: auto;
+        transition: left 0.3s ease !important;
+    }
+
+    .sidebar.open {
+        left: 0 !important;
+    }
+
+    .sidebar-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        opacity: 0;
+        visibility: hidden;
+        z-index: 1000;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .sidebar-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    body.menu-open {
+        overflow: hidden;
+    }
+
+    .main-panel {
+        margin-left: 0 !important;
+        width: 100%;
+    }
+}
