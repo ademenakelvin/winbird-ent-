@@ -21,6 +21,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, ListView, RedirectView, TemplateView
+from django.utils.timesince import timesince
 
 from .forms import (
     BookingCreateForm,
@@ -1312,6 +1313,34 @@ def topbar_notifications_api(request):
         )
 
     unread_count = Notification.objects.filter(is_read=False).count()
+
+    return JsonResponse(
+        {
+            "unread_count": unread_count,
+            "items": items,
+        }
+    )
+         @login_required
+def topbar_notifications_api(request):
+    notifications = Notification.objects.select_related("booking").order_by("-created_at")[:6]
+    unread_count = Notification.objects.filter(is_read=False).count()
+
+    items = []
+    for note in notifications:
+        if note.booking_id:
+            url = reverse("booking-detail", args=[note.booking_id])
+        else:
+            url = reverse("notifications")
+
+        items.append(
+            {
+                "title": note.title,
+                "message": note.message,
+                "is_read": note.is_read,
+                "created": f"{timesince(note.created_at)} ago",
+                "url": url,
+            }
+        )
 
     return JsonResponse(
         {
