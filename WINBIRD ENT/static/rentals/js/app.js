@@ -130,10 +130,47 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // =========================
+    // TOAST NOTIFICATION SYSTEM
+    // =========================
+    function getToastContainer() {
+        let container = document.getElementById("toastContainer");
+        if (!container) {
+            container = document.createElement("div");
+            container.id = "toastContainer";
+            container.className = "toast-container";
+            document.body.appendChild(container);
+        }
+        return container;
+    }
+
+    function showToast(title, message) {
+        const container = getToastContainer();
+        const toast = document.createElement("div");
+        toast.className = "app-toast";
+        toast.innerHTML = `
+            <div class="app-toast-title">${title}</div>
+            <div class="app-toast-message">${message}</div>
+        `;
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => {
+            toast.classList.add("show");
+        });
+
+        window.setTimeout(() => {
+            toast.classList.remove("show");
+            window.setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 4000);
+    }
+
+    // =========================
     // NOTIFICATIONS
     // =========================
     let lastNotificationCount = 0;
     let soundUnlocked = false;
+    let hasLoadedNotificationsOnce = false;
 
     function getSound() {
         return document.getElementById("notificationSound");
@@ -158,6 +195,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         sound.currentTime = 0;
         sound.play().catch(() => {});
+    }
+
+    function vibrateDevice() {
+        if ("vibrate" in navigator) {
+            navigator.vibrate([180, 80, 180]);
+        }
     }
 
     document.addEventListener("click", unlockSound, { once: true });
@@ -190,11 +233,22 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
 
             const unread = Number(data.unread_count || 0);
+            const items = data.items || [];
 
-            if (unread > lastNotificationCount) {
+            if (hasLoadedNotificationsOnce && unread > lastNotificationCount) {
                 playNotificationSound();
+                vibrateDevice();
+
+                if (items.length > 0) {
+                    const newest = items[0];
+                    showToast(newest.title, newest.message);
+                } else {
+                    showToast("New notification", "You have a new notification.");
+                }
             }
+
             lastNotificationCount = unread;
+            hasLoadedNotificationsOnce = true;
 
             if (countBadge) {
                 countBadge.textContent = unread;
@@ -202,8 +256,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (dropdownList) {
-                const items = data.items || [];
-
                 if (!items.length) {
                     dropdownList.innerHTML = `<div class="notification-dropdown-empty">No notifications yet.</div>`;
                 } else {
