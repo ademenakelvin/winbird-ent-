@@ -5,7 +5,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}WINBIRD Enterprise{% endblock %}</title>
-
     <link rel="stylesheet" href="{% static 'rentals/css/app.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
@@ -33,14 +32,14 @@
             <a href="{% url 'return-tracker' %}">Returns</a>
 
             <a href="{% url 'notifications' %}">
-                Notifications
+                <span class="sidebar-link-label">Notifications</span>
                 {% if unread_notification_count %}
                     <span class="nav-badge">{{ unread_notification_count }}</span>
                 {% endif %}
             </a>
 
             <a href="{% url 'inventory-alerts' %}">
-                Alerts
+                <span class="sidebar-link-label">Alerts</span>
                 {% if unread_inventory_alert_count %}
                     <span class="nav-badge">{{ unread_inventory_alert_count }}</span>
                 {% endif %}
@@ -73,19 +72,10 @@
             </div>
 
             <div class="topbar-right">
-                <!-- LIVE NOTIFICATION BELL -->
-                <div class="notification-bell-wrap">
-                    <button
-                        type="button"
-                        class="notification-bell-btn"
-                        id="notificationBellToggle"
-                        aria-label="Open notifications"
-                    >
-                        🔔
-                        <span
-                            class="notification-bell-badge {% if not unread_notification_count %}is-hidden{% endif %}"
-                            id="notificationBellBadge"
-                        >
+                <div class="topbar-notification-wrap">
+                    <button id="notificationBell" class="notification-bell-btn" type="button" aria-label="Notifications">
+                        <span class="notification-bell-icon">🔔</span>
+                        <span id="notificationCount" class="notification-live-badge {% if not unread_notification_count %}hidden{% endif %}">
                             {{ unread_notification_count|default:0 }}
                         </span>
                     </button>
@@ -93,9 +83,8 @@
                     <div class="notification-dropdown" id="notificationDropdown">
                         <div class="notification-dropdown-head">
                             <strong>Notifications</strong>
-                            <a href="{% url 'notifications' %}" class="text-link">View all</a>
+                            <a href="{% url 'notifications' %}" class="text-link-btn">Open all</a>
                         </div>
-
                         <div class="notification-dropdown-list" id="notificationDropdownList">
                             <div class="notification-dropdown-empty">Loading...</div>
                         </div>
@@ -141,6 +130,10 @@
     {% block auth_content %}{% endblock %}
 </div>
 {% endif %}
+
+<audio id="notificationSound" preload="auto">
+    <source src="{% static 'rentals/sounds/notify.mp3' %}" type="audio/mpeg">
+</audio>
 
 <script>
     window.notificationFeedUrl = "{% url 'topbar-notifications-api' %}";
