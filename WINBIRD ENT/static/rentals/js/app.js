@@ -21,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-
     // =========================
     // FORMSET
     // =========================
@@ -30,9 +29,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalInput = formset.querySelector(`input[name="${prefix}-TOTAL_FORMS"]`);
         const formsContainer = formset.querySelector("[data-formset-forms]");
         const emptyTemplate = formset.querySelector("template[data-empty-form]");
-        const addButton = formset.querySelector("[data-add-form]");
+        const addButton = formset.querySelector("[data-add-form]") || formset.parentElement.querySelector("[data-add-form]");
 
-        if (!totalInput || !formsContainer || !emptyTemplate || !addButton) return;
+        if (!totalInput || !formsContainer || !emptyTemplate || !addButton) {
+            return;
+        }
 
         addButton.addEventListener("click", () => {
             const index = Number(totalInput.value);
@@ -66,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-
     // =========================
     // AVAILABILITY CHECKER
     // =========================
@@ -78,7 +78,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const eventDateInput = document.querySelector('input[name="event_date"]');
         const returnDateInput = document.querySelector('input[name="return_due_date"]');
 
-        if (!endpoint || !trigger || !feedback || !results || !eventDateInput || !returnDateInput) return;
+        if (!endpoint || !trigger || !feedback || !results || !eventDateInput || !returnDateInput) {
+            return;
+        }
 
         trigger.addEventListener("click", async () => {
             const eventDate = eventDateInput.value;
@@ -96,21 +98,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 const response = await fetch(`${endpoint}?event_date=${eventDate}&return_due_date=${returnDate}`);
                 const data = await response.json();
 
-                results.innerHTML = data.items.map(item => `
+                results.innerHTML = (data.items || []).map(item => `
                     <div class="availability-card ${item.status}">
-                        <strong>${item.item}</strong>
-                        <span>${item.available}/${item.total}</span>
+                        <div class="availability-card-head">
+                            <strong>${item.item}</strong>
+                            <span>${item.available} of ${item.total} free</span>
+                        </div>
+                        <p>${item.category || ""}</p>
+                        <small>${item.price_labels || ""}</small>
                     </div>
                 `).join("");
 
                 feedback.textContent = "Done";
-
             } catch {
                 feedback.textContent = "Error checking availability";
             }
         });
     });
-
 
     // =========================
     // TEXTAREA AUTO GROW
@@ -125,9 +129,8 @@ document.addEventListener("DOMContentLoaded", () => {
         resize();
     });
 
-
     // =========================
-    // 🔔 NOTIFICATIONS SYSTEM
+    // NOTIFICATIONS
     // =========================
     let lastNotificationCount = 0;
     let soundUnlocked = false;
@@ -160,55 +163,67 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("click", unlockSound, { once: true });
     document.addEventListener("touchstart", unlockSound, { once: true });
 
-
     const bell = document.getElementById("notificationBell");
     const dropdown = document.getElementById("notificationDropdown");
+    const dropdownList = document.getElementById("notificationDropdownList");
+    const countBadge = document.getElementById("notificationCount");
 
     if (bell && dropdown) {
-        bell.addEventListener("click", () => {
+        bell.addEventListener("click", async (event) => {
+            event.stopPropagation();
             dropdown.classList.toggle("show");
+            if (dropdown.classList.contains("show")) {
+                await loadNotifications();
+            }
+        });
+
+        document.addEventListener("click", (event) => {
+            if (!dropdown.contains(event.target) && !bell.contains(event.target)) {
+                dropdown.classList.remove("show");
+            }
         });
     }
-
 
     async function loadNotifications() {
         try {
             const response = await fetch("/api/topbar-notifications/");
             const data = await response.json();
 
-            const unread = data.unread_count;
+            const unread = Number(data.unread_count || 0);
 
-            // 🔊 SOUND
             if (unread > lastNotificationCount) {
                 playNotificationSound();
             }
             lastNotificationCount = unread;
 
-            // 🔴 BADGE
-            const badge = document.getElementById("notificationBadge");
-            if (badge) {
-                badge.textContent = unread;
-                badge.style.display = unread > 0 ? "inline-block" : "none";
+            if (countBadge) {
+                countBadge.textContent = unread;
+                countBadge.classList.toggle("hidden", unread <= 0);
             }
 
-            // 📩 DROPDOWN LIST
-            if (dropdown) {
-                dropdown.innerHTML = data.items.map(n => `
-                    <a href="${n.url}" class="notification-item ${n.is_read ? '' : 'unread'}">
-                        <strong>${n.title}</strong>
-                        <p>${n.message}</p>
-                        <small>${n.created}</small>
-                    </a>
-                `).join("");
-            }
+            if (dropdownList) {
+                const items = data.items || [];
 
+                if (!items.length) {
+                    dropdownList.innerHTML = `<div class="notification-dropdown-empty">No notifications yet.</div>`;
+                } else {
+                    dropdownList.innerHTML = items.map(n => `
+                        <a href="${n.url}" class="notification-dropdown-item ${n.is_read ? "" : "unread"}">
+                            <strong>${n.title}</strong>
+                            <p>${n.message}</p>
+                            <small>${n.created}</small>
+                        </a>
+                    `).join("");
+                }
+            }
         } catch (error) {
             console.log("Notification error:", error);
+            if (dropdownList) {
+                dropdownList.innerHTML = `<div class="notification-dropdown-empty">Unable to load notifications.</div>`;
+            }
         }
     }
 
-    // Load every 10 seconds
     setInterval(loadNotifications, 10000);
     loadNotifications();
-
 });
