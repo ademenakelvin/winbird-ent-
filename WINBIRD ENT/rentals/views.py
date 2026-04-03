@@ -18,10 +18,10 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.dateparse import parse_date
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.timesince import timesince
 from django.views import View
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, ListView, RedirectView, TemplateView
-from django.utils.timesince import timesince
 
 from .forms import (
     BookingCreateForm,
@@ -512,6 +512,7 @@ class BookingListView(LoginRequiredMixin, ListView):
             context["calendar_month_value"] = month_value
             context["calendar_previous_query"] = previous_params.urlencode()
             context["calendar_next_query"] = next_params.urlencode()
+
         return context
 
 
@@ -704,7 +705,7 @@ class CustomerDetailView(LoginRequiredMixin, DetailView):
                     Decimal("0.00"),
                 ),
                 "spotlight_booking": spotlight_booking,
-                "spotlight_title": "Next booking" if spotlight_booking and booking.event_date >= today else "Latest booking",
+                "spotlight_title": "Next booking" if spotlight_booking and spotlight_booking.event_date >= today else "Latest booking",
             }
         )
         return context
@@ -1286,41 +1287,9 @@ class SettingsView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context.update(self.build_context(staff_form=staff_form))
         return self.render_to_response(context)
-        
-        from django.http import JsonResponse
-        from django.contrib.auth.decorators import login_required
-        from django.utils.timesince import timesince
+
 
 @login_required
-def topbar_notifications_api(request):
-    notifications = Notification.objects.select_related("booking").order_by("-created_at")[:6]
-
-    items = []
-    for note in notifications:
-        if note.booking_id:
-            url = reverse("booking-detail", args=[note.booking_id])
-        else:
-            url = reverse("notifications")
-
-        items.append(
-            {
-                "title": note.title,
-                "message": note.message,
-                "is_read": note.is_read,
-                "created": f"{timesince(note.created_at)} ago",
-                "url": url,
-            }
-        )
-
-    unread_count = Notification.objects.filter(is_read=False).count()
-
-    return JsonResponse(
-        {
-            "unread_count": unread_count,
-            "items": items,
-        }
-    )
-         @login_required
 def topbar_notifications_api(request):
     notifications = Notification.objects.select_related("booking").order_by("-created_at")[:6]
     unread_count = Notification.objects.filter(is_read=False).count()
